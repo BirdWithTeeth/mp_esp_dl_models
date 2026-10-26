@@ -68,37 +68,16 @@ if (MP_DL_CAT_DETECTOR_ENABLED)
     )
 endif()
 
-# --- Cloned external modules (camera + jpeg) ---
-# The workflow clones these into <workspace>/../ext_modules. Each repo keeps
-# its micropython.cmake at the repo root; "src/" is tried as a fallback.
-set(EXT_MODULES_DIR "${CMAKE_CURRENT_LIST_DIR}/../../ext_modules")
-
-set(CAMERA_FOUND FALSE)
-foreach(_cand "micropython.cmake" "src/micropython.cmake")
-    set(_p "${EXT_MODULES_DIR}/micropython-camera-API/${_cand}")
-    if(EXISTS "${_p}")
-        message(STATUS "Including micropython-camera-API from ${_p}")
-        include("${_p}")
-        set(CAMERA_FOUND TRUE)
-        break()
-    endif()
-endforeach()
-if(NOT CAMERA_FOUND)
-    message(WARNING "micropython-camera-API cmake file not found under ${EXT_MODULES_DIR}/micropython-camera-API")
-endif()
-
-set(JPEG_FOUND FALSE)
-foreach(_cand "micropython.cmake" "src/micropython.cmake")
-    set(_p "${EXT_MODULES_DIR}/mp_jpeg/${_cand}")
-    if(EXISTS "${_p}")
-        message(STATUS "Including mp_jpeg from ${_p}")
-        include("${_p}")
-        set(JPEG_FOUND TRUE)
-        break()
-    endif()
-endforeach()
-if(NOT JPEG_FOUND)
-    message(WARNING "mp_jpeg cmake file not found under ${EXT_MODULES_DIR}/mp_jpeg")
+# --- Cloned external module (camera) ---
+# The workflow clones micropython-camera-API and mp_jpeg into <workspace>/../ext_modules.
+# The camera module's micropython.cmake includes mp_jpeg by itself (it looks for
+# ../mp_jpeg next to it), so only the camera module is included here.
+set(CAMERA_CMAKE "${CMAKE_CURRENT_LIST_DIR}/../../ext_modules/micropython-camera-API/micropython.cmake")
+if(EXISTS "${CAMERA_CMAKE}")
+    message(STATUS "Including micropython-camera-API from ${CAMERA_CMAKE}")
+    include("${CAMERA_CMAKE}")
+else()
+    message(WARNING "micropython-camera-API cmake file not found at ${CAMERA_CMAKE}")
 endif()
 
 # Deactivate ROM text compression for module
