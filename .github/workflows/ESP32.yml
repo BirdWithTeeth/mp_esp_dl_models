@@ -115,7 +115,11 @@ jobs:
           cd ${{ github.workspace }}/../ext_modules
           git clone https://github.com/cnadler86/micropython-camera-API.git
           git clone https://github.com/cnadler86/mp_jpeg.git
-
+          echo "--- DEBUG ---"
+          pwd
+          ls -la
+          find ${{ github.workspace }}/../ext_modules -name "micropython.cmake"
+          echo "--- END DEBUG ---"
           cd ${{ github.workspace }}/boards/
 
           IFS='@' read -r BUILD_TARGET CAMERA_MODEL <<< "${{ matrix.board }}"
