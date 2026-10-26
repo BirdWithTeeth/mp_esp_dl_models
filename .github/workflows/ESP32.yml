@@ -59,9 +59,9 @@ jobs:
         if: steps.cache_esp_idf.outputs.cache-hit != 'true'
         run: |
           cd ~
-          # git clone --depth 1 --branch mp-dl https://github.com/cnadler86/micropython.git ${{ env.MICROPYTHON_DIR }}
           git clone https://github.com/micropython/micropython.git ${{ env.MICROPYTHON_DIR }}
           cd ${{ env.MICROPYTHON_DIR }}
+          git checkout ${{ env.MPY_RELEASE }}
           git submodule update --init --depth 1
           cd mpy-cross && make
 
@@ -69,7 +69,6 @@ jobs:
         if: steps.cache_esp_idf.outputs.cache-hit != 'true'
         run: |
           cd ~
-          # git clone --depth 1 --branch release/v5.4 https://github.com/espressif/esp-idf.git ${{ env.ESP_IDF_DIR }}
           git clone --depth 1 --branch v5.4.2 https://github.com/espressif/esp-idf.git ${{ env.ESP_IDF_DIR }}
           git -C ${{ env.ESP_IDF_DIR }} submodule update --init --recursive --filter=tree:0
           cd ${{ env.ESP_IDF_DIR }} && ./install.sh esp32s3
@@ -82,16 +81,12 @@ jobs:
       fail-fast: false
       matrix:
         board:
-          - ESP32_GENERIC_S3-SPIRAM_OCT
-          - ESP32_GENERIC_S3-FLASH_4M
-          - ESP32_GENERIC_S3-FLASH_16M
-          - ESP32_GENERIC_S3-FLASH_16M@FREENOVE_ESP32S3_CAM
-          - ESP32_GENERIC_S3-SPIRAM_OCT@XIAO_ESP32S3
+          - ESP32_GENERIC_S3-SPIRAM_OCT@FREENOVE_ESP32S3_CAM
 
     steps:
       - name: Get MicroPython latest release
         run: |
-          MPY_RELEASE=$(curl --silent "https://api.github.com/repos/micropython/micropython/releases/latest" | jq -r .tag_name)
+          MPY_RELEASE=v1.26.0
           echo "MPY_RELEASE=${MPY_RELEASE}" >> $GITHUB_ENV
 
       - name: Cache ESP-IDF and MicroPython
