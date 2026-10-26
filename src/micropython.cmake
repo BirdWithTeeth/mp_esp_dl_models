@@ -68,18 +68,18 @@ if (MP_DL_CAT_DETECTOR_ENABLED)
     )
 endif()
 
-# --- Directly Include Camera and JPEG from ext_modules ---
-set(CAMERA_C_MAKE "${CMAKE_CURRENT_LIST_DIR}/../ext_modules/micropython-camera-API/src/micropython.cmake")
+# --- Corrected Paths for Cloned Ext Modules ---
+set(CAMERA_C_MAKE "${CMAKE_CURRENT_LIST_DIR}/../../ext_modules/micropython-camera-API/src/micropython.cmake")
 if(EXISTS "${CAMERA_C_MAKE}")
-    message(STATUS "Including micropython-camera-API directly")
+    message(STATUS "Including micropython-camera-API successfully")
     include(${CAMERA_C_MAKE})
 else()
     message(WARNING "micropython-camera-API cmake file not found at ${CAMERA_C_MAKE}")
 endif()
 
-set(JPEG_C_MAKE "${CMAKE_CURRENT_LIST_DIR}/../ext_modules/mp_jpeg/src/micropython.cmake")
+set(JPEG_C_MAKE "${CMAKE_CURRENT_LIST_DIR}/../../ext_modules/mp_jpeg/src/micropython.cmake")
 if(EXISTS "${JPEG_C_MAKE}")
-    message(STATUS "Including mp_jpeg directly")
+    message(STATUS "Including mp_jpeg successfully")
     include(${JPEG_C_MAKE})
 else()
     message(WARNING "mp_jpeg cmake file not found at ${JPEG_C_MAKE}")
