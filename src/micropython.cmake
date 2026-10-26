@@ -68,7 +68,7 @@ if (MP_DL_CAT_DETECTOR_ENABLED)
     )
 endif()
 
-# Check if Camera is set or if Camera directory exists in ext_modules
+# --- 1. Locate and set MP_CAMERA_SRC FIRST ---
 if(DEFINED MP_CAMERA_DIR AND EXISTS "${MP_CAMERA_DIR}")
     message(STATUS "Using user-defined MP_CAMERA_DIR: ${MP_CAMERA_DIR}")
     set(MP_CAMERA_SRC "${MP_CAMERA_DIR}/src/micropython.cmake")
@@ -77,26 +77,27 @@ elseif(EXISTS "${CMAKE_CURRENT_LIST_DIR}/../ext_modules/micropython-camera-API")
     set(MP_CAMERA_SRC "${CMAKE_CURRENT_LIST_DIR}/../ext_modules/micropython-camera-API/src/micropython.cmake")
 endif()
 
-# Add MP_CAMERA_SRC cmake file to target_sources if it is defined
+# --- 2. Locate and set MP_JPEG_SRC FIRST ---
+if(DEFINED MP_JPEG_DIR AND EXISTS "${MP_JPEG_DIR}")
+    message(STATUS "Using user-defined MP_JPEG_DIR: ${MP_JPEG_DIR}")
+    set(MP_JPEG_SRC "${MP_JPEG_DIR}/src/micropython.cmake")
+elseif(EXISTS "${CMAKE_CURRENT_LIST_DIR}/../ext_modules/mp_jpeg")
+    message(STATUS "Found mp_jpeg directory in ext_modules")
+    set(MP_JPEG_SRC "${CMAKE_CURRENT_LIST_DIR}/../ext_modules/mp_jpeg/src/micropython.cmake")
+endif()
+
+# --- 3. Include Camera ---
 if(DEFINED MP_CAMERA_SRC AND EXISTS "${MP_CAMERA_SRC}")
     include(${MP_CAMERA_SRC})
 else()
     message(WARNING "MP_CAMERA_SRC not found or not defined!")
-    # Check if MP_JPEG_DIR is set or if mp_jpeg directory exists in ext_modules
-    if(DEFINED MP_JPEG_DIR AND EXISTS "${MP_JPEG_DIR}")
-        message(STATUS "Using user-defined MP_JPEG_DIR: ${MP_JPEG_DIR}")
-        set(MP_JPEG_SRC "${MP_JPEG_DIR}/src/micropython.cmake")
-    elseif(EXISTS "${CMAKE_CURRENT_LIST_DIR}/../ext_modules/mp_jpeg")
-        message(STATUS "Found mp_jpeg directory in ext_modules")
-        set(MP_JPEG_SRC "${CMAKE_CURRENT_LIST_DIR}/../ext_modules/mp_jpeg/src/micropython.cmake")
-    endif()
+endif()
 
-    # Add MP_JPEG_SRC cmake file to target_sources if it is defined
-    if(DEFINED MP_JPEG_SRC AND EXISTS "${MP_JPEG_SRC}")
-        include(${MP_JPEG_SRC})
-    else()
-        message(WARNING "MP_JPEG_SRC not found or not defined!")
-    endif()
+# --- 4. Include JPEG ---
+if(DEFINED MP_JPEG_SRC AND EXISTS "${MP_JPEG_SRC}")
+    include(${MP_JPEG_SRC})
+else()
+    message(WARNING "MP_JPEG_SRC not found or not defined!")
 endif()
 
 # Deactivate ROM text compression for module
