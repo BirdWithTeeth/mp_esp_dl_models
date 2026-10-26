@@ -68,32 +68,21 @@ if (MP_DL_CAT_DETECTOR_ENABLED)
     )
 endif()
 
-# --- Locate and Include Camera ---
-if(DEFINED MP_CAMERA_DIR AND EXISTS "${MP_CAMERA_DIR}/src/micropython.cmake")
-    set(MP_CAMERA_SRC "${MP_CAMERA_DIR}/src/micropython.cmake")
-elseif(EXISTS "${CMAKE_CURRENT_LIST_DIR}/../ext_modules/micropython-camera-API/src/micropython.cmake")
-    message(STATUS "Found and including micropython-camera-API")
-    set(MP_CAMERA_SRC "${CMAKE_CURRENT_LIST_DIR}/../ext_modules/micropython-camera-API/src/micropython.cmake")
-endif()
-
-if(DEFINED MP_CAMERA_SRC AND EXISTS "${MP_CAMERA_SRC}")
-    include(${MP_CAMERA_SRC})
+# --- Directly Include Camera and JPEG from ext_modules ---
+set(CAMERA_C_MAKE "${CMAKE_CURRENT_LIST_DIR}/../ext_modules/micropython-camera-API/src/micropython.cmake")
+if(EXISTS "${CAMERA_C_MAKE}")
+    message(STATUS "Including micropython-camera-API directly")
+    include(${CAMERA_C_MAKE})
 else()
-    message(WARNING "MP_CAMERA_SRC not found or not defined!")
+    message(WARNING "micropython-camera-API cmake file not found at ${CAMERA_C_MAKE}")
 endif()
 
-# --- Locate and Include JPEG ---
-if(DEFINED MP_JPEG_DIR AND EXISTS "${MP_JPEG_DIR}/src/micropython.cmake")
-    set(MP_JPEG_SRC "${MP_JPEG_DIR}/src/micropython.cmake")
-elseif(EXISTS "${CMAKE_CURRENT_LIST_DIR}/../ext_modules/mp_jpeg/src/micropython.cmake")
-    message(STATUS "Found and including mp_jpeg")
-    set(MP_JPEG_SRC "${CMAKE_CURRENT_LIST_DIR}/../ext_modules/mp_jpeg/src/micropython.cmake")
-endif()
-
-if(DEFINED MP_JPEG_SRC AND EXISTS "${MP_JPEG_SRC}")
-    include(${MP_JPEG_SRC})
+set(JPEG_C_MAKE "${CMAKE_CURRENT_LIST_DIR}/../ext_modules/mp_jpeg/src/micropython.cmake")
+if(EXISTS "${JPEG_C_MAKE}")
+    message(STATUS "Including mp_jpeg directly")
+    include(${JPEG_C_MAKE})
 else()
-    message(WARNING "MP_JPEG_SRC not found or not defined!")
+    message(WARNING "mp_jpeg cmake file not found at ${JPEG_C_MAKE}")
 endif()
 
 # Deactivate ROM text compression for module
