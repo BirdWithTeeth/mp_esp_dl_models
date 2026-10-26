@@ -115,11 +115,12 @@ jobs:
           cd ${{ github.workspace }}/../ext_modules
           git clone https://github.com/cnadler86/micropython-camera-API.git
           git clone https://github.com/cnadler86/mp_jpeg.git
-          echo "--- DEBUG ---"
-          pwd
-          ls -la
-          find ${{ github.workspace }}/../ext_modules -name "micropython.cmake"
-          echo "--- END DEBUG ---"
+
+          # the camera project looks up "esp32-camera", but this build's component
+          # is named "espressif__esp32-camera"
+          sed -i 's/ esp32-camera COMPONENT_DIR/ espressif__esp32-camera COMPONENT_DIR/' micropython-camera-API/micropython.cmake
+          grep -n "idf_component_get_property" micropython-camera-API/micropython.cmake
+
           cd ${{ github.workspace }}/boards/
 
           IFS='@' read -r BUILD_TARGET CAMERA_MODEL <<< "${{ matrix.board }}"
