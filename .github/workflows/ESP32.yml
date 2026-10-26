@@ -33,7 +33,7 @@ jobs:
     steps:
       - name: Get MicroPython latest release
         run: |
-          MPY_RELEASE=$(curl --silent "https://api.github.com/repos/micropython/micropython/releases/latest" | jq -r .tag_name)
+          MPY_RELEASE=v1.26.0
           echo "MPY_RELEASE=${MPY_RELEASE}" >> $GITHUB_ENV
 
       - name: Cache ESP-IDF and MicroPython
