@@ -108,19 +108,28 @@ jobs:
       - name: Build MicroPython
         run: |
           source ${{ env.ESP_IDF_DIR }}/export.sh
-          cd ${{ github.workspace }}/..
+          
+          # 1. Create a local ext_modules directory and clone both dependencies inside it
+          mkdir -p ${{ github.workspace }}/ext_modules
+          cd ${{ github.workspace }}/ext_modules
           git clone https://github.com/cnadler86/micropython-camera-API.git || true
           git clone https://github.com/cnadler86/mp_jpeg.git || true
           
+          # 2. Write a master micropython.cmake that includes both modules for CMake
+          cat << 'EOF' > micropython.cmake
+          include(${CMAKE_CURRENT_LIST_DIR}/micropython-camera-API/src/micropython.cmake)
+          include(${CMAKE_CURRENT_LIST_DIR}/mp_jpeg/src/micropython.cmake)
+          EOF
+
           cd ${{ github.workspace }}/boards
           
           IFS='@' read -r BUILD_TARGET CAMERA_MODEL <<< "${{ matrix.board }}"
           IFS='-' read -r BOARD_NAME BOARD_VARIANT <<< "${BUILD_TARGET}"
 
-          USER_MODULES="${{ github.workspace }}/../micropython-camera-API/src;${{ github.workspace }}/../mp_jpeg/src"
           MICROPY_PATH="${HOME}/micropython"
+          USER_MODULES="${{ github.workspace }}/ext_modules"
 
-          # Use a bash array to avoid eval and semicolon splitting bugs
+          # 3. Point USER_C_MODULES to the single unified folder containing the master cmake file
           CMD=(idf.py -D MICROPY_DIR="$MICROPY_PATH" -D MICROPY_BOARD="$BOARD_NAME" -D "USER_C_MODULES=$USER_MODULES" -B "build-$BUILD_TARGET")
 
           if [ -n "$BOARD_VARIANT" ]; then
@@ -135,7 +144,6 @@ jobs:
           
           CMD+=("build")
           
-          # Execute the command safely
           "${CMD[@]}"
 
           cd "build-$BUILD_TARGET"
