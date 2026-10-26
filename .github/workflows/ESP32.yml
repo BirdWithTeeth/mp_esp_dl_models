@@ -117,7 +117,7 @@ jobs:
           IFS='@' read -r BUILD_TARGET CAMERA_MODEL <<< "${{ matrix.board }}"
           IFS='-' read -r BOARD_NAME BOARD_VARIANT <<< "${BUILD_TARGET}"
 
-          USER_MODULES="${{ github.workspace }}/../micropython-camera-API;${{ github.workspace }}/../mp_jpeg"
+          USER_MODULES="${{ github.workspace }}/../micropython-camera-API/src;${{ github.workspace }}/../mp_jpeg/src"
           MICROPY_PATH="${HOME}/micropython"
 
           # Use a bash array to avoid eval and semicolon splitting bugs
