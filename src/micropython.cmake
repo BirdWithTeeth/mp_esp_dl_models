@@ -68,32 +68,28 @@ if (MP_DL_CAT_DETECTOR_ENABLED)
     )
 endif()
 
-# --- 1. Locate and set MP_CAMERA_SRC FIRST ---
-if(DEFINED MP_CAMERA_DIR AND EXISTS "${MP_CAMERA_DIR}")
-    message(STATUS "Using user-defined MP_CAMERA_DIR: ${MP_CAMERA_DIR}")
+# --- Locate and Include Camera ---
+if(DEFINED MP_CAMERA_DIR AND EXISTS "${MP_CAMERA_DIR}/src/micropython.cmake")
     set(MP_CAMERA_SRC "${MP_CAMERA_DIR}/src/micropython.cmake")
-elseif(EXISTS "${CMAKE_CURRENT_LIST_DIR}/../ext_modules/micropython-camera-API")
-    message(STATUS "Found micropython-camera-API directory in ext_modules")
+elseif(EXISTS "${CMAKE_CURRENT_LIST_DIR}/../ext_modules/micropython-camera-API/src/micropython.cmake")
+    message(STATUS "Found and including micropython-camera-API")
     set(MP_CAMERA_SRC "${CMAKE_CURRENT_LIST_DIR}/../ext_modules/micropython-camera-API/src/micropython.cmake")
 endif()
 
-# --- 2. Locate and set MP_JPEG_SRC FIRST ---
-if(DEFINED MP_JPEG_DIR AND EXISTS "${MP_JPEG_DIR}")
-    message(STATUS "Using user-defined MP_JPEG_DIR: ${MP_JPEG_DIR}")
-    set(MP_JPEG_SRC "${MP_JPEG_DIR}/src/micropython.cmake")
-elseif(EXISTS "${CMAKE_CURRENT_LIST_DIR}/../ext_modules/mp_jpeg")
-    message(STATUS "Found mp_jpeg directory in ext_modules")
-    set(MP_JPEG_SRC "${CMAKE_CURRENT_LIST_DIR}/../ext_modules/mp_jpeg/src/micropython.cmake")
-endif()
-
-# --- 3. Include Camera ---
 if(DEFINED MP_CAMERA_SRC AND EXISTS "${MP_CAMERA_SRC}")
     include(${MP_CAMERA_SRC})
 else()
     message(WARNING "MP_CAMERA_SRC not found or not defined!")
 endif()
 
-# --- 4. Include JPEG ---
+# --- Locate and Include JPEG ---
+if(DEFINED MP_JPEG_DIR AND EXISTS "${MP_JPEG_DIR}/src/micropython.cmake")
+    set(MP_JPEG_SRC "${MP_JPEG_DIR}/src/micropython.cmake")
+elseif(EXISTS "${CMAKE_CURRENT_LIST_DIR}/../ext_modules/mp_jpeg/src/micropython.cmake")
+    message(STATUS "Found and including mp_jpeg")
+    set(MP_JPEG_SRC "${CMAKE_CURRENT_LIST_DIR}/../ext_modules/mp_jpeg/src/micropython.cmake")
+endif()
+
 if(DEFINED MP_JPEG_SRC AND EXISTS "${MP_JPEG_SRC}")
     include(${MP_JPEG_SRC})
 else()
