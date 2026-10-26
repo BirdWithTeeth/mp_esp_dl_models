@@ -108,49 +108,38 @@ jobs:
       - name: Build MicroPython
         run: |
           source ${{ env.ESP_IDF_DIR }}/export.sh
-          
-          # 1. Create a local ext_modules directory and clone both dependencies inside it
-          mkdir -p ${{ github.workspace }}/ext_modules
-          cd ${{ github.workspace }}/ext_modules
-          git clone https://github.com/cnadler86/micropython-camera-API.git || true
-          git clone https://github.com/cnadler86/mp_jpeg.git || true
-          
-          # 2. Write a master micropython.cmake that includes both modules for CMake
-          cat << 'EOF' > micropython.cmake
-          include(${CMAKE_CURRENT_LIST_DIR}/micropython-camera-API/src/micropython.cmake)
-          include(${CMAKE_CURRENT_LIST_DIR}/mp_jpeg/src/micropython.cmake)
-          EOF
 
-          cd ${{ github.workspace }}/boards
-          
+          # camera and jpeg modules go one level above the workspace,
+          # which is where src/micropython.cmake looks for them
+          mkdir -p ${{ github.workspace }}/../ext_modules
+          cd ${{ github.workspace }}/../ext_modules
+          git clone https://github.com/cnadler86/micropython-camera-API.git
+          git clone https://github.com/cnadler86/mp_jpeg.git
+
+          cd ${{ github.workspace }}/boards/
+
           IFS='@' read -r BUILD_TARGET CAMERA_MODEL <<< "${{ matrix.board }}"
           IFS='-' read -r BOARD_NAME BOARD_VARIANT <<< "${BUILD_TARGET}"
 
-          MICROPY_PATH="${HOME}/micropython"
-          USER_MODULES="${{ github.workspace }}/ext_modules"
-
-          # 3. Point USER_C_MODULES to the single unified folder containing the master cmake file
-          CMD=(idf.py -D MICROPY_DIR="$MICROPY_PATH" -D MICROPY_BOARD="$BOARD_NAME" -D "USER_C_MODULES=$USER_MODULES" -B "build-$BUILD_TARGET")
-
-          if [ -n "$BOARD_VARIANT" ]; then
-              CMD+=("-D" "MICROPY_BOARD_VARIANT=$BOARD_VARIANT")
+          IDF_CMD="idf.py -D MICROPY_DIR=${{ env.MICROPYTHON_DIR }} -D MICROPY_BOARD=$BOARD_NAME -B build-$BUILD_TARGET"
+          if [ -n "${BOARD_VARIANT}" ]; then
+              IDF_CMD="$IDF_CMD -D MICROPY_BOARD_VARIANT=$BOARD_VARIANT"
           fi
-          if [ -n "$CAMERA_MODEL" ]; then
-              echo "FW_NAME=${CAMERA_MODEL}" >> $GITHUB_ENV
-              CMD+=("-D" "MICROPY_CAMERA_MODEL=$CAMERA_MODEL")
+          if [ -n "${CAMERA_MODEL}" ]; then
+            echo "FW_NAME=${CAMERA_MODEL}" >> $GITHUB_ENV
+            FINAL_CMD="${IDF_CMD} -D MICROPY_CAMERA_MODEL=${CAMERA_MODEL} build"
           else
-              echo "FW_NAME=${BUILD_TARGET}" >> $GITHUB_ENV
+            echo "FW_NAME=${BUILD_TARGET}" >> $GITHUB_ENV
+            FINAL_CMD="${IDF_CMD} build"
           fi
-          
-          CMD+=("build")
-          
-          "${CMD[@]}"
 
-          cd "build-$BUILD_TARGET"
-          python "$MICROPY_PATH/ports/esp32/makeimg.py" sdkconfig bootloader/bootloader.bin partition_table/partition-table.bin micropython.bin firmware.bin micropython.uf2
-          
-          mkdir -p ~/artifacts
-          mv firmware.bin ~/artifacts/firmware-$BUILD_TARGET.bin
+          eval "$FINAL_CMD"
+
+          cd build-$BUILD_TARGET
+          python ${{ env.MICROPYTHON_DIR }}/ports/esp32/makeimg.py sdkconfig bootloader/bootloader.bin partition_table/partition-table.bin micropython.bin firmware.bin micropython.uf2
+
+          mkdir -p ${{ env.ARTIFACTS_DIR }}
+          mv firmware.bin ${{ env.ARTIFACTS_DIR }}/firmware-$BUILD_TARGET.bin
 
       - name: Upload firmware artifact
         uses: actions/upload-artifact@v4
